@@ -4,6 +4,7 @@
  * palm reads taller than a shrub (real-world scale, not uniform stamping).
  */
 
+import type { ReactElement } from "react";
 import type { PlantKind } from "./plantPositions";
 
 export const KIND_SCALE: Record<PlantKind, number> = {
@@ -88,7 +89,7 @@ function FloweringSilhouette() {
   );
 }
 
-const SILHOUETTES: Record<PlantKind, () => JSX.Element> = {
+const SILHOUETTES: Record<PlantKind, () => ReactElement> = {
   palm: PalmSilhouette,
   banana: BananaSilhouette,
   tree: TreeSilhouette,

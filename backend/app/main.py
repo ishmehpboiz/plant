@@ -1,12 +1,23 @@
 import os
 
 from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
 from app.database import Base, engine, get_db
 
 app = FastAPI(title="Smart Plant Watering Simulator API")
+
+# Only needed for local dev, where the frontend (:3000) and backend (:8000)
+# are different origins. In production, vercel.json routes both through one
+# domain, so the browser sees same-origin requests and this never applies.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # v1: create tables on startup instead of a migrations tool.
 Base.metadata.create_all(bind=engine)

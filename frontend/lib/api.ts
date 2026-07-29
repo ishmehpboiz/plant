@@ -13,7 +13,7 @@ import type {
   WaterRequest,
 } from "./types";
 
-const USE_MOCKS = true;
+const USE_MOCKS = false;
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 let plantsStore: PlantListItem[] = structuredClone(MOCK_PLANTS);

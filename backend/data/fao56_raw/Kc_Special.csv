@@ -1,0 +1,3 @@
+"Crop","Kc_ini","Kc_mid","Kc_end"
+"Open_Water_lowerthan2m_depth_or_in_subhumid_climates_or_tropics",NA,1.05,1.05
+"Open_Water_greaterthan5m_depth_clear_of_turbidity_temperate_climate",NA,0.65,1.25

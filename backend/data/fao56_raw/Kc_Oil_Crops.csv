@@ -1,0 +1,9 @@
+"Crop","Kc_ini","Kc_mid","Kc_end"
+"Castorbean_Ricinus",0.35,1.15,0.55
+"Rapeseed_Canola_Kc_mid_min",0.35,1,0.35
+"Rapeseed_Canola_Kc_mid_max",0.35,1.15,0.35
+"Safflower_Kc_mid_min",0.35,1,0.25
+"Safflower_Kc_mid_max",0.35,1.15,0.25
+"Sesame",0.35,1.1,0.25
+"Sunflower_Kc_mid_min",0.35,1,0.35
+"Sunflower_Kc_mid_max",0.35,1.15,0.35

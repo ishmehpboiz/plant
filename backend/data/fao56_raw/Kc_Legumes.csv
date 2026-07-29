@@ -1,0 +1,14 @@
+"Crop","Kc_ini","Kc_mid","Kc_end"
+"Beans_green",0.5,1.05,0.9
+"Beans_dry_&_Pulses",0.4,1.15,0.35
+"Chick_pea",0.4,1,0.35
+"Fababean_Fresh",0.5,1.15,1.1
+"Fababean_Dry_Seed",0.5,1.15,0.3
+"Grabanzo",0.4,1.15,0.35
+"Green_Gram_&_Cowpeas_Kc_end_min",0.4,1.05,0.35
+"Green_Gram_&_Cowpeas_Kc_end_max",0.4,1.05,0.6
+"Groundnut_Peanut",0.4,1.15,0.6
+"Lentil",0.4,1.1,0.3
+"Peas_Fresh",0.5,1.15,1.1
+"Peas_Dry_Seed",0.4,1.15,0.3
+"Soybeans",0.4,1.15,0.5

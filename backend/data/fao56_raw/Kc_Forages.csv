@@ -1,0 +1,16 @@
+"Crop","Kc_ini","Kc_mid","Kc_end"
+"Alfalfa_Hay_averaged_cutting_effects",0.4,0.95,0.9
+"Alfalfa_Hay_individual_cutting_periods",0.4,1.2,1.15
+"Alfalfa_Hay_for_seed",0.4,0.5,0.5
+"Bermuda_hay_averaged_cutting_effects",0.55,1,0.85
+"Bermuda_hay_Spring_crop_for_seed",0.35,0.9,0.65
+"Clover_hay_Berseem_averaged_cutting_effects",0.4,0.9,0.85
+"Clover_hay_Berseem_individual_cutting_periods",0.4,1.15,1.1
+"Rye_Grass_hay_averaged_cutting_effects",0.95,1.05,1
+"Sudan_Grass_hay_annual_averaged_cutting_effects",0.5,0.9,0.85
+"Sudan_Grass_hay_annual_individual_cutting_periods",0.5,1.15,1.1
+"Grazing_Pasture_Rotated_Grazing_Kc_mid_min",0.4,0.85,0.85
+"Grazing_Pasture_Rotated_Grazing_Kc_mid_max",0.4,1.05,0.85
+"Grazing_Pasture_Extensive_Grazing",0.3,0.75,0.75
+"Turf_grass_cool_season",0.9,0.95,0.95
+"Turf_grass_warm_season",0.8,0.85,0.85

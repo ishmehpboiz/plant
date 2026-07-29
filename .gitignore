@@ -1,0 +1,17 @@
+# backend (Python/FastAPI)
+backend/.venv/
+backend/.env
+backend/__pycache__/
+backend/**/__pycache__/
+backend/*.pyc
+
+# frontend (Next.js) - Cursor's side
+frontend/node_modules/
+frontend/.next/
+frontend/.env*.local
+
+# OS
+.DS_Store
+
+# Claude Code local-only settings
+.claude/settings.local.json

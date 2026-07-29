@@ -1,0 +1,13 @@
+"Crop","Kc_ini","Kc_mid","Kc_end"
+"Banana_1st_year",0.5,1.1,1
+"Banana_2nd_year",1,1.2,1.1
+"Cacao",1,1.05,1.05
+"Coffee_bare_ground_cover",0.9,0.95,0.95
+"Coffee_with_weeds",1.05,1.1,1.1
+"Date_Palms",0.9,0.95,0.95
+"Palm_Trees",0.95,1,1
+"Pineapple_bare_soil",0.5,0.3,0.3
+"Pineapple_with_grass_cover",0.5,0.5,0.5
+"Rubber_Trees",0.95,1,1
+"Tea_non_shaded",0.95,1,1
+"Tea_non_shaded",1.1,1.15,1.15

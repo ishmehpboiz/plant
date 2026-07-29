@@ -14,7 +14,11 @@ import type {
 } from "./types";
 
 const USE_MOCKS = false;
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Empty string, not a hardcoded localhost URL: with vercel.json routing
+// /api/* to the same domain in production, a relative fetch (empty base +
+// "/api/...") is exactly right there. Local dev sets NEXT_PUBLIC_API_URL in
+// frontend/.env.local (gitignored) to point at the backend's own port.
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 let plantsStore: PlantListItem[] = structuredClone(MOCK_PLANTS);
 let nextId = Math.max(...plantsStore.map((p) => p.id)) + 1;

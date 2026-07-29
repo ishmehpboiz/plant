@@ -32,6 +32,15 @@ properties (a function of soil texture and root depth), not really a
 estimates bucketed by rooting depth/type (deep-rooted tree vs.
 shallow-rooted), pending real root-zone-depletion data. Don't read these
 as FAO-56-sourced the way `kc` is -- `kc_source` only speaks to `kc`.
+
+## typical_watering_liters caveat
+
+Also not FAO-56 data (Table 12 has no watering-volume figures either) --
+a placeholder "how much water a normal manual watering gives this plant"
+estimate, bucketed by mature plant size (large tree > palm/banana >
+shrub/vine), used only as the default for `POST /api/plants/{id}/water`
+when the caller doesn't specify `amount_liters`. See water_balance.py for
+how this converts into a moisture change.
 """
 
 from dataclasses import dataclass
@@ -45,76 +54,92 @@ class SpeciesProfile:
     wilting_point: float
     field_capacity: float
     kc_source: str
+    typical_watering_liters: float
 
 
 KC_TABLE: dict[str, SpeciesProfile] = {
     "Cocos nucifera": SpeciesProfile(
         "Cocos nucifera", "Coconut", 1.00, 0.12, 0.42,
         "FAO-56 Table 12 (analog: Palm Trees, Kc_mid=1.00 -- coconut is a palm)",
+        20.0,
     ),
     "Musa spp.": SpeciesProfile(
         "Musa spp.", "Banana", 1.20, 0.18, 0.48,
         "FAO-56 Table 12 (Banana, 2nd year, Kc_mid=1.20)",
+        10.0,
     ),
     "Mangifera indica": SpeciesProfile(
         "Mangifera indica", "Mango", 0.85, 0.12, 0.42,
         "FAO-56 Table 12 (analog: Avocado, no ground cover, Kc_mid=0.85 -- "
         "closest evergreen-fruit-tree structural match; mango has no direct FAO-56 entry)",
+        20.0,
     ),
     "Artocarpus heterophyllus": SpeciesProfile(
         "Artocarpus heterophyllus", "Jackfruit", 1.00, 0.12, 0.42,
         "FAO-56 Table 12 (analog: Conifer Trees, Kc_mid=1.00 -- FAO-56's own "
         "documented fallback for dense-canopy evergreen trees lacking specific data)",
+        20.0,
     ),
     "Hevea brasiliensis": SpeciesProfile(
         "Hevea brasiliensis", "Rubber tree", 1.00, 0.12, 0.42,
         "FAO-56 Table 12 (Rubber Trees, Kc_mid=1.00)",
+        20.0,
     ),
     "Camellia sinensis": SpeciesProfile(
         "Camellia sinensis", "Tea", 1.00, 0.15, 0.45,
         "FAO-56 Table 12 (Tea, non-shaded, Kc_mid=1.00)",
+        5.0,
     ),
     "Coffea spp.": SpeciesProfile(
         "Coffea spp.", "Coffee", 0.95, 0.15, 0.45,
         "FAO-56 Table 12 (Coffee, bare ground cover, Kc_mid=0.95)",
+        5.0,
     ),
     "Areca catechu": SpeciesProfile(
         "Areca catechu", "Areca nut / betel palm", 1.00, 0.12, 0.42,
         "FAO-56 Table 12 (analog: Palm Trees, Kc_mid=1.00 -- areca is a palm)",
+        10.0,
     ),
     "Manihot esculenta": SpeciesProfile(
         "Manihot esculenta", "Tapioca / cassava", 1.10, 0.18, 0.48,
         "FAO-56 Table 12 (Cassava, year 2, Kc_mid=1.10)",
+        5.0,
     ),
     "Piper nigrum": SpeciesProfile(
         "Piper nigrum", "Black pepper (vine)", 0.85, 0.18, 0.48,
         "FAO-56 Table 12 (analog: Grapes, Table/Raisin, Kc_mid=0.85 -- closest "
         "perennial-vine-on-support structural match; pepper has no direct FAO-56 entry)",
+        3.0,
     ),
     "Carica papaya": SpeciesProfile(
         "Carica papaya", "Papaya", 0.75, 0.18, 0.48,
         "category-estimate (no reasonable FAO-56 analog identified; shallow-rooted, "
         "drought-sensitive -- judgment call, not sourced)",
+        8.0,
     ),
     "Murraya koenigii": SpeciesProfile(
         "Murraya koenigii", "Curry leaf", 0.35, 0.10, 0.40,
         "category-estimate (no reasonable FAO-56 analog identified; hardy, "
         "drought-tolerant shrub -- judgment call, not sourced)",
+        3.0,
     ),
     "Moringa oleifera": SpeciesProfile(
         "Moringa oleifera", "Drumstick / moringa", 0.35, 0.10, 0.40,
         "category-estimate (no reasonable FAO-56 analog identified; notably "
         "drought-tolerant -- judgment call, not sourced)",
+        5.0,
     ),
     "Hibiscus rosa-sinensis": SpeciesProfile(
         "Hibiscus rosa-sinensis", "Hibiscus", 0.55, 0.15, 0.45,
         "category-estimate (no reasonable FAO-56 analog identified -- ornamental "
         "shrub, judgment call, not sourced)",
+        3.0,
     ),
     "Jasminum sambac": SpeciesProfile(
         "Jasminum sambac", "Jasmine (malli)", 0.55, 0.15, 0.45,
         "category-estimate (no reasonable FAO-56 analog identified -- prefers "
         "consistent moisture for flower yield, judgment call, not sourced)",
+        2.0,
     ),
 }
 
@@ -127,6 +152,7 @@ UNKNOWN_SPECIES_PROFILE = SpeciesProfile(
     wilting_point=0.15,
     field_capacity=0.45,
     kc_source="none -- species not yet identified, generic mid-range placeholder",
+    typical_watering_liters=5.0,
 )
 
 

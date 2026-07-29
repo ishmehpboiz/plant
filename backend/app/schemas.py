@@ -1,3 +1,5 @@
+from datetime import date
+
 from pydantic import BaseModel
 
 
@@ -6,6 +8,25 @@ class PlantCreate(BaseModel):
     photo_base64: str
     location_lat: float
     location_lng: float
+
+
+class WaterRequest(BaseModel):
+    amount_liters: float | None = None
+
+
+class HistoryPoint(BaseModel):
+    date: date
+    moisture: float
+    et0: float
+    rainfall: float
+    irrigated: bool
+
+    model_config = {"from_attributes": True}
+
+
+class PlantHistory(BaseModel):
+    plant_id: int
+    history: list[HistoryPoint]
 
 
 class PlantOut(BaseModel):

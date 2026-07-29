@@ -16,6 +16,7 @@ class Plant(Base):
     wilting_point: Mapped[float] = mapped_column(Float, nullable=False)
     field_capacity: Mapped[float] = mapped_column(Float, nullable=False)
     current_moisture: Mapped[float] = mapped_column(Float, nullable=False)
+    typical_watering_liters: Mapped[float] = mapped_column(Float, nullable=False)
     location_lat: Mapped[float] = mapped_column(Float, nullable=False)
     location_lng: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

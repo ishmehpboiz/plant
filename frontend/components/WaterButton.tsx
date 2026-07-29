@@ -35,7 +35,9 @@ export function WaterButton({ plantId, onWatered, compact }: Props) {
         className={`btn btn--primary ${compact ? "btn--compact" : ""}`}
         onClick={handleWater}
         disabled={busy}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.94 }}
+        transition={{ type: "spring", stiffness: 500, damping: 22 }}
       >
         {busy ? "…" : compact ? "Mark as watered" : "I watered it"}
       </motion.button>

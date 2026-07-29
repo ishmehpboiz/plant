@@ -7,23 +7,23 @@ type Props = {
   plants: PlantListItem[];
 };
 
-function plantHealthPct(plant: PlantListItem): number {
-  const span = plant.field_capacity - plant.wilting_point || 1;
-  const raw = (plant.current_moisture - plant.wilting_point) / span;
-  return Math.min(1, Math.max(0, raw)) * 100;
-}
-
 const RADIUS = 54;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
+/**
+ * Deliberately the plain average of each plant's current_moisture -- the same
+ * number shown in the rail/actions list -- not a normalized "health score".
+ * A gauge showing a different metric than the numbers right next to it reads
+ * as broken math, even when the underlying metric is technically defensible.
+ */
 export function GardenHealthGauge({ plants }: Props) {
   const reduceMotion = useReducedMotion();
   const healthPct = plants.length
-    ? Math.round(plants.reduce((sum, p) => sum + plantHealthPct(p), 0) / plants.length)
+    ? Math.round((plants.reduce((sum, p) => sum + p.current_moisture, 0) / plants.length) * 100)
     : 0;
 
-  const isLow = healthPct < 40;
-  const isMid = healthPct >= 40 && healthPct < 70;
+  const isLow = healthPct < 22;
+  const isMid = healthPct >= 22 && healthPct < 38;
   const gradientId = isLow ? "gaugeGradLow" : isMid ? "gaugeGradMid" : "gaugeGradHigh";
   const statusWord = isLow ? "Needs attention" : isMid ? "Doing okay" : "Thriving";
 

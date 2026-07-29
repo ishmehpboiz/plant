@@ -166,28 +166,57 @@ function isoDaysAgo(daysAgo: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/**
+ * Builds backward from today so the most recent point always exactly equals
+ * the plant's real current_moisture (previously the loop ran forward from an
+ * arbitrary seed and could drift away from that value by the end). The last
+ * few days' trend is deliberately tied to needs_watering -- a plant flagged
+ * as needing water must show a genuine recent decline, not an arbitrary
+ * shared pattern that happened to tick up for everyone on the same day.
+ */
 function buildHistory(
   plantId: number,
   startMoisture: number,
   wilting: number,
   field: number,
+  needsWatering: boolean,
   days = 30,
 ): PlantHistory {
-  const history = [];
+  const entries: PlantHistory["history"] = [];
   let moisture = startMoisture;
 
-  for (let i = days - 1; i >= 0; i--) {
-    const et0 = 3.2 + Math.sin(i / 4) * 0.6 + (i % 5) * 0.05;
-    const rainfall = i % 7 === 0 ? 4.5 + (i % 3) : i % 11 === 0 ? 12.0 : 0;
-    const irrigated = i === 12 || i === 3;
-    const irrigationBoost = irrigated ? 0.08 : 0;
-    const etc = (et0 * 0.001) * 0.9; // scaled for volumetric fraction mock
-    moisture = Math.min(
-      field,
-      Math.max(wilting, moisture + rainfall * 0.002 + irrigationBoost - etc),
-    );
+  entries.push({
+    date: isoDaysAgo(0),
+    moisture: Math.round(moisture * 1000) / 1000,
+    et0: 3.4,
+    rainfall: 0,
+    irrigated: false,
+  });
 
-    history.push({
+  for (let i = 1; i < days; i++) {
+    const et0 = 3.2 + Math.sin(i / 4) * 0.6 + (i % 5) * 0.05;
+    let forwardDelta: number;
+    let rainfall = 0;
+    let irrigated = false;
+
+    if (i < 5) {
+      // Recent days drive the trend arrow -- must be honest about direction.
+      const recentBase = needsWatering ? -0.007 : 0.0025;
+      forwardDelta = recentBase + Math.sin((i + plantId) * 1.7) * 0.0008;
+    } else {
+      // Further back: organic variety (rain/irrigation), phase-shifted per
+      // plant so all 5 don't share identical event days.
+      rainfall = (i + plantId) % 7 === 2 ? 4.5 + (i % 3) : (i + plantId) % 11 === 5 ? 12.0 : 0;
+      irrigated = i === 12 + (plantId % 3) || i === 22 - (plantId % 4);
+      const irrigationBoost = irrigated ? 0.08 : 0;
+      const etc = et0 * 0.001 * 0.9;
+      forwardDelta = rainfall * 0.002 + irrigationBoost - etc;
+    }
+
+    // Walking backward in time: yesterday's moisture = today's moisture minus
+    // the change that happened *forward* from yesterday to today.
+    moisture = Math.min(field, Math.max(wilting, moisture - forwardDelta));
+    entries.push({
       date: isoDaysAgo(i),
       moisture: Math.round(moisture * 1000) / 1000,
       et0: Math.round(et0 * 10) / 10,
@@ -196,13 +225,14 @@ function buildHistory(
     });
   }
 
-  return { plant_id: plantId, history };
+  entries.reverse(); // oldest -> newest, ending exactly at today's real value
+  return { plant_id: plantId, history: entries };
 }
 
 export const MOCK_HISTORY: Record<number, PlantHistory> = Object.fromEntries(
   MOCK_PLANTS.map((p) => [
     p.id,
-    buildHistory(p.id, p.current_moisture, p.wilting_point, p.field_capacity),
+    buildHistory(p.id, p.current_moisture, p.wilting_point, p.field_capacity, p.needs_watering),
   ]),
 );
 

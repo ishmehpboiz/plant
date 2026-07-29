@@ -72,14 +72,18 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
         {/* Outer ground */}
         <rect x="0" y="0" width="800" height="560" fill="#8a9a6e" />
 
-        {/* Plot enclosure — consistent on all four sides */}
+        {/* Plot enclosure — same tan-bar + highlight treatment on all four sides */}
         <rect x="40" y="48" width="720" height="28" rx="2" fill="#c9a87a" />
         <rect x="40" y="48" width="720" height="6" fill="#d4b88a" opacity="0.5" />
+        <rect x="40" y="48" width="28" height="464" rx="2" fill="#c9a87a" />
+        <rect x="40" y="48" width="6" height="464" fill="#d4b88a" opacity="0.5" />
         <rect x="732" y="48" width="28" height="464" rx="2" fill="#c9a87a" />
+        <rect x="746" y="48" width="6" height="464" fill="#d4b88a" opacity="0.5" />
         <rect x="40" y="480" width="720" height="28" rx="2" fill="#c9a87a" />
         <rect x="40" y="494" width="720" height="6" fill="#d4b88a" opacity="0.5" />
 
-        {/* Left wooden fence */}
+        {/* Fence posts, layered on top of the left bar as detail, not a
+            different border treatment */}
         {Array.from({ length: 14 }).map((_, i) => (
           <rect
             key={i}
@@ -109,21 +113,41 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
         />
         <rect x="90" y="90" width="620" height="420" filter="url(#grassGrain)" clipPath="url(#lawnClip)" opacity="0.5" />
 
-        {/* Garden-bed / mulch zone — a second distinguishable ground material
-            under the planted cluster, so the lawn isn't one uniform color */}
+        {/* Garden-bed / mulch zone — a genuinely different ground material
+            (warm brown mulch, not a green tint), with visible chip texture
+            so it doesn't read as a second, barely-different green layer */}
+        <clipPath id="mulchClip">
+          <path d="M 165 200 Q 320 175 470 215 Q 520 260 470 340 Q 340 400 210 375 Q 150 300 165 200 Z" />
+        </clipPath>
         <path
           d="M 165 200 Q 320 175 470 215 Q 520 260 470 340 Q 340 400 210 375 Q 150 300 165 200 Z"
-          fill="#a67b4f"
-          opacity="0.35"
+          fill="#8a6238"
+          opacity="0.85"
           clipPath="url(#lawnClip)"
         />
+        {Array.from({ length: 46 }).map((_, i) => {
+          const mx = 170 + ((i * 37) % 330);
+          const my = 190 + ((i * 53) % 190);
+          const mr = 2 + (i % 3);
+          return (
+            <ellipse
+              key={i}
+              cx={mx}
+              cy={my}
+              rx={mr}
+              ry={mr * 0.65}
+              fill={i % 2 === 0 ? "#6f4f2a" : "#a9754a"}
+              opacity="0.7"
+              clipPath="url(#mulchClip)"
+            />
+          );
+        })}
         <path
           d="M 165 200 Q 320 175 470 215 Q 520 260 470 340 Q 340 400 210 375 Q 150 300 165 200 Z"
           fill="none"
-          stroke="#8a6238"
+          stroke="#5c4023"
           strokeWidth="1.5"
-          strokeDasharray="3 5"
-          opacity="0.4"
+          opacity="0.5"
           clipPath="url(#lawnClip)"
         />
 
@@ -205,22 +229,25 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
         <ellipse cx="640" cy="395" rx="52" ry="34" fill="url(#waterGrad)" />
         <ellipse cx="630" cy="387" rx="20" ry="12" fill="#a8d8d6" opacity="0.6" />
 
-        {/* Decorative trees */}
-        <g transform="translate(120, 130)">
-          <rect x="18" y="28" width="8" height="22" fill="#5c4030" />
-          <polygon points="22,8 38,36 6,36" fill="#e89545" />
+        {/* Decorative background trees -- deliberately muted/small and kept
+            clear of the plant-pin cluster so they read as atmosphere, not
+            unlabeled data. Real plants always look sharper and more saturated
+            than these by comparison. */}
+        <g transform="translate(90, 460) scale(0.7)" opacity="0.55">
+          <rect x="14" y="22" width="6" height="18" fill="#6b5a4a" />
+          <polygon points="17,6 30,28 4,28" fill="#c9a878" />
         </g>
-        <g transform="translate(650, 120)">
-          <rect x="18" y="28" width="8" height="22" fill="#5c4030" />
-          <polygon points="22,8 38,36 6,36" fill="#5a9e55" />
+        <g transform="translate(690, 95) scale(0.7)" opacity="0.55">
+          <rect x="14" y="22" width="6" height="18" fill="#6b5a4a" />
+          <polygon points="17,6 30,28 4,28" fill="#8fae7f" />
         </g>
-        <g transform="translate(400, 95)">
-          <rect x="14" y="22" width="6" height="18" fill="#5c4030" />
-          <polygon points="17,6 30,28 4,28" fill="#e89545" />
+        <g transform="translate(400, 88) scale(0.6)" opacity="0.5">
+          <rect x="14" y="22" width="6" height="18" fill="#6b5a4a" />
+          <polygon points="17,6 30,28 4,28" fill="#c9a878" />
         </g>
-        <g transform="translate(700, 450)">
-          <rect x="14" y="22" width="6" height="18" fill="#5c4030" />
-          <polygon points="17,6 30,28 4,28" fill="#5a9e55" />
+        <g transform="translate(715, 460) scale(0.65)" opacity="0.5">
+          <rect x="14" y="22" width="6" height="18" fill="#6b5a4a" />
+          <polygon points="17,6 30,28 4,28" fill="#8fae7f" />
         </g>
 
         <text x="400" y="530" textAnchor="middle" fontSize="11" fill="#59564b" fontFamily="monospace">
@@ -249,6 +276,10 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
               style={{ transform: `scale(${KIND_SCALE[kind]})` }}
             >
               {plant.needs_watering && <div className="garden-pin__glow" aria-hidden />}
+              <div
+                className={`garden-pin__ping ${plant.needs_watering ? "garden-pin__ping--thirsty" : "garden-pin__ping--healthy"}`}
+                aria-hidden
+              />
               <PlantSilhouette kind={kind} className="garden-pin__plant" />
               <div className="garden-pin__column" aria-hidden>
                 <div className="garden-pin__fill" style={{ height: `${pct}%` }} />
@@ -259,6 +290,8 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
           </button>
         );
       })}
+
+      <div className="garden-map__hud-grid" aria-hidden />
     </div>
   );
 }

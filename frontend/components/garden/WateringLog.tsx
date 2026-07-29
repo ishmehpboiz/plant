@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getRecentWaterings } from "@/lib/api";
+import { InsightCard } from "./InsightCard";
 import type { WateringLogEntry } from "@/lib/types";
 
 type Props = {
@@ -21,7 +22,7 @@ export function WateringLog({ refreshKey }: Props) {
   }, [refreshKey]);
 
   return (
-    <div className="insight-card">
+    <InsightCard>
       <p className="insight-card__heading">Recent watering</p>
       {!entries && <p className="insight-card__empty">Loading…</p>}
       {entries && entries.length === 0 && (
@@ -41,6 +42,6 @@ export function WateringLog({ refreshKey }: Props) {
           ))}
         </ul>
       )}
-    </div>
+    </InsightCard>
   );
 }

@@ -15,7 +15,7 @@
   --line: #dad6c6;
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-body: var(--font-dm-sans), system-ui, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", "SF Mono", Consolas, monospace;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", "SF Mono", Consolas, monospace;
 }
 
 @theme inline {
@@ -459,6 +459,18 @@ input:focus-visible,
   transform-origin: center;
 }
 
+/* One-time "sensor calibrating" sweep before the fill reveals -- not a loop,
+   just a single pass on mount. */
+.moisture__scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--teal);
+  box-shadow: 0 0 8px 1px var(--teal);
+  z-index: 2;
+}
+
 .moisture__scale {
   display: flex;
   flex-direction: column;
@@ -471,10 +483,11 @@ input:focus-visible,
 
 .moisture__value {
   margin: 0.5rem 0 0;
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
+  font-weight: 600;
   font-size: 2.2rem;
   line-height: 1;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
 }
 
 .moisture__value span {
@@ -627,6 +640,42 @@ input:focus-visible,
   }
 }
 
+/* ---- Ambient particle drift ---- */
+.particle-field {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle-field__mote {
+  position: absolute;
+  bottom: -5%;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--teal) 45%, transparent);
+  animation-name: moteDrift;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+@keyframes moteDrift {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translate(var(--drift-x), -110vh);
+    opacity: 0;
+  }
+}
+
 /* ---- Garden health gauge ---- */
 .health-gauge {
   position: relative;
@@ -652,9 +701,9 @@ input:focus-visible,
 }
 
 .health-gauge__pct {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 560;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 600;
   color: var(--ink);
   line-height: 1;
 }
@@ -675,6 +724,8 @@ input:focus-visible,
 
 /* ---- 2D garden map ---- */
 .garden-page {
+  position: relative;
+  z-index: 1;
   min-height: 100vh;
   background: var(--bg);
   padding: 1.5rem 1.5rem 3rem;
@@ -721,8 +772,11 @@ input:focus-visible,
 
 /* ---- Plant rail ---- */
 .plant-rail {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--teal) 30%, var(--line));
+  box-shadow: 0 8px 32px rgba(38, 36, 31, 0.1), 0 0 0 1px color-mix(in srgb, var(--teal) 12%, transparent);
   border-radius: 14px;
   padding: 1rem 0.75rem;
 }
@@ -893,6 +947,43 @@ input:focus-visible,
   display: block;
 }
 
+/* Faint HUD-style grid drifting over the map, like an AR sensor overlay --
+   deliberately low-opacity and non-interactive so it never competes with
+   the illustration or blocks clicking plant pins underneath. */
+.garden-map__hud-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--teal) 22%, transparent) 0,
+      color-mix(in srgb, var(--teal) 22%, transparent) 1px,
+      transparent 1px,
+      transparent 26px
+    ),
+    repeating-linear-gradient(
+      to right,
+      color-mix(in srgb, var(--teal) 22%, transparent) 0,
+      color-mix(in srgb, var(--teal) 22%, transparent) 1px,
+      transparent 1px,
+      transparent 26px
+    );
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  animation: hudGridDrift 14s linear infinite;
+}
+
+@keyframes hudGridDrift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 0 52px, 52px 0;
+  }
+}
+
 .garden-pin {
   position: absolute;
   transform: translate(-50%, -100%);
@@ -938,6 +1029,57 @@ input:focus-visible,
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(38, 36, 31, 0.15);
   z-index: 1;
+}
+
+/* Radar-ping ring, emanating from ground level -- fast/bright for thirsty
+   plants, slow/calm for healthy ones. Genuinely tied to real status, not
+   decorative: the ping speed itself is the signal. */
+.garden-pin__ping {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  width: 20px;
+  height: 20px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  border: 1.5px solid;
+  pointer-events: none;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-out;
+}
+
+.garden-pin__ping--thirsty {
+  border-color: var(--laterite);
+  animation-name: pingRingFast;
+  animation-duration: 1.5s;
+}
+
+.garden-pin__ping--healthy {
+  border-color: var(--teal);
+  animation-name: pingRingSlow;
+  animation-duration: 3.6s;
+}
+
+@keyframes pingRingFast {
+  0% {
+    transform: translateX(-50%) scale(0.4);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateX(-50%) scale(2.8);
+    opacity: 0;
+  }
+}
+
+@keyframes pingRingSlow {
+  0% {
+    transform: translateX(-50%) scale(0.4);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateX(-50%) scale(2.2);
+    opacity: 0;
+  }
 }
 
 .garden-pin__shadow {
@@ -1064,8 +1206,11 @@ input:focus-visible,
 }
 
 .garden-panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--teal) 30%, var(--line));
+  box-shadow: 0 8px 32px rgba(38, 36, 31, 0.1), 0 0 0 1px color-mix(in srgb, var(--teal) 12%, transparent);
   border-radius: 14px;
   padding: 1.25rem;
   overflow-y: auto;
@@ -1143,8 +1288,11 @@ input:focus-visible,
 }
 
 .insight-card {
-  background: var(--surface);
-  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid color-mix(in srgb, var(--teal) 30%, var(--line));
+  box-shadow: 0 8px 32px rgba(38, 36, 31, 0.1), 0 0 0 1px color-mix(in srgb, var(--teal) 12%, transparent);
   border-radius: 14px;
   padding: 1.1rem 1.15rem;
 }
@@ -1331,4 +1479,12 @@ input:focus-visible,
   font-family: var(--font-mono);
   font-size: 0.65rem;
   color: var(--muted);
+  text-align: center;
+}
+
+.weather-outlook__note {
+  margin: 0.6rem 0 0;
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-style: italic;
 }

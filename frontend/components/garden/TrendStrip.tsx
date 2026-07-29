@@ -2,6 +2,7 @@
 
 import { useReducedMotion } from "motion/react";
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { InsightCard } from "./InsightCard";
 import type { PlantHistory, PlantListItem } from "@/lib/types";
 
 type Props = {
@@ -49,7 +50,7 @@ export function TrendStrip({ plants, histories }: Props) {
   });
 
   return (
-    <div className="insight-card">
+    <InsightCard>
       <p className="insight-card__heading">Garden-wide moisture, last 30 days</p>
       <div className="trend-strip__legend">
         {plants.map((plant, i) => (
@@ -109,6 +110,6 @@ export function TrendStrip({ plants, histories }: Props) {
           })}
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </InsightCard>
   );
 }

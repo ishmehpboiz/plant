@@ -37,8 +37,9 @@ export function PlantRail({ plants, selectedId, onSelectPlant, trends = {} }: Pr
                 type="button"
                 className={`plant-rail__item ${selectedId === plant.id ? "is-selected" : ""}`}
                 onClick={() => onSelectPlant(plant.id)}
-                whileHover={reduceMotion ? undefined : { y: -2, scale: 1.015 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                whileHover={reduceMotion ? undefined : { y: -3, scale: 1.02 }}
+                whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
               >
                 <span className={`dot ${plant.needs_watering ? "needs" : "ok"}`} aria-hidden />
                 <span className="plant-rail__name">{plant.name}</span>

@@ -30,7 +30,7 @@ export function MoistureChart({ history }: Props) {
       <div className="chart__head">
         <h2>30 day moisture</h2>
         <span>
-          Water loss {latest?.et0.toFixed(1) ?? "0.0"}mm · rainfall {latest?.rainfall.toFixed(1) ?? "0.0"}mm
+          Water use {latest?.et0.toFixed(1) ?? "0.0"}mm · rainfall {latest?.rainfall.toFixed(1) ?? "0.0"}mm
         </span>
       </div>
       <div className="legend">

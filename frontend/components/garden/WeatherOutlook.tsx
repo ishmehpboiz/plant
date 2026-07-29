@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { KANYAKUMARI } from "@/lib/mocks";
+import { InsightCard } from "./InsightCard";
 
 type DayForecast = {
   date: string;
@@ -53,23 +54,28 @@ export function WeatherOutlook() {
   if (failed) return null;
 
   return (
-    <div className="insight-card">
+    <InsightCard>
       <p className="insight-card__heading">Weather outlook · Kanyakumari</p>
       {!days && <p className="insight-card__empty">Loading forecast…</p>}
       {days && (
-        <div className="weather-outlook">
-          {days.map((d, i) => (
-            <div className="weather-outlook__day" key={d.date}>
-              <span className="weather-outlook__label">{dayLabel(d.date, i)}</span>
-              <span className="weather-outlook__temp">{Math.round(d.tempMax)}°</span>
-              <span className="weather-outlook__stat">Loss {d.et0.toFixed(1)}mm</span>
-              <span className="weather-outlook__stat">
-                {d.rainfall > 0 ? `Rain ${d.rainfall.toFixed(1)}mm` : "No rain"}
-              </span>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="weather-outlook">
+            {days.map((d, i) => (
+              <div className="weather-outlook__day" key={d.date}>
+                <span className="weather-outlook__label">{dayLabel(d.date, i)}</span>
+                <span className="weather-outlook__temp">{Math.round(d.tempMax)}°</span>
+                <span className="weather-outlook__stat">Water use {d.et0.toFixed(1)}mm</span>
+                <span className="weather-outlook__stat">
+                  {d.rainfall > 0 ? `Rain ${d.rainfall.toFixed(1)}mm` : "No rain"}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="weather-outlook__note">
+            Water use = moisture plants lose to sun &amp; wind each day (evapotranspiration)
+          </p>
+        </>
       )}
-    </div>
+    </InsightCard>
   );
 }

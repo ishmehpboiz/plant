@@ -35,11 +35,23 @@ export function MoistureIndicator({
         <div className="column-shell moisture__column">
           <div className="tick" style={{ bottom: `${wiltPct}%` }} />
           <div className="tick" style={{ bottom: `${fieldPct}%` }} />
+          {!reduceMotion && (
+            <motion.div
+              className="moisture__scanline"
+              initial={{ top: "0%", opacity: 1 }}
+              animate={{ top: "100%", opacity: [1, 1, 0] }}
+              transition={{ duration: 0.55, ease: "easeIn" }}
+            />
+          )}
           <motion.div
             className="column-fill moisture__fill"
             initial={reduceMotion ? false : { height: 0 }}
             animate={{ height: `${pct * 100}%` }}
-            transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 80, damping: 18 }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { type: "spring", stiffness: 80, damping: 18, delay: 0.5 }
+            }
           />
           {!reduceMotion && (
             <motion.div

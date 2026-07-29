@@ -10,6 +10,7 @@ import { GardenMap2D } from "./GardenMap2D";
 import { PlantRail } from "./PlantRail";
 import { ActionsSummary } from "./ActionsSummary";
 import { GardenHealthGauge } from "./GardenHealthGauge";
+import { ParticleField } from "./ParticleField";
 import { TrendStrip } from "./TrendStrip";
 import { WateringLog } from "./WateringLog";
 import { WeatherOutlook } from "./WeatherOutlook";
@@ -72,7 +73,9 @@ export function GardenExperience({ plants, onPlantsChange }: Props) {
   }
 
   return (
-    <div className="garden-page">
+    <>
+      <ParticleField />
+      <div className="garden-page">
       <header className="garden-page__header">
         <div className="garden-page__title-row">
           <GardenHealthGauge plants={plantState} />
@@ -86,7 +89,7 @@ export function GardenExperience({ plants, onPlantsChange }: Props) {
         </div>
         <div className="garden-overlay__actions">
           <div className="weather-chip weather-chip--overlay">
-            <span>Water loss <b>6.14mm</b></span>
+            <span>Water use <b>6.14mm</b></span>
             <span>Rain <b>3.0mm</b></span>
             <span>6:00 AM</span>
           </div>
@@ -195,6 +198,7 @@ export function GardenExperience({ plants, onPlantsChange }: Props) {
         <WateringLog refreshKey={insightsVersion} />
         <WeatherOutlook />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

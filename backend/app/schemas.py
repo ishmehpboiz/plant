@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -43,3 +43,10 @@ class PlantOut(BaseModel):
 
 class PlantListItem(PlantOut):
     needs_watering: bool
+
+
+class WateringEventOut(BaseModel):
+    plant_id: int
+    plant_name: str
+    amount_liters: float
+    watered_at: datetime

@@ -211,26 +211,15 @@ export async function getAllHistories(days = 30): Promise<Record<number, PlantHi
 }
 
 /**
- * Recent watering events across the garden. The frozen API contract has no
- * "list watering events" endpoint (only POST .../water to create one), so in
- * live mode this is approximated from moisture_history's `irrigated` flag --
- * real dates, but no real amount_liters (shown as unknown rather than
- * invented). Mock mode has the real seeded amounts.
+ * Recent watering events across the garden. Reads the real watering_events
+ * table (GET /api/watering-events) -- an addition to the original contract,
+ * since that only had POST .../water to create an event, not list them.
+ * Real per-event amount + precise timestamp, correctly shows multiple
+ * waterings of the same plant on the same day as distinct entries.
  */
 export async function getRecentWaterings(limit = 8): Promise<WateringLogEntry[]> {
   if (USE_MOCKS) return mockGetRecentWaterings(limit);
-
-  const plants = await liveFetch<PlantListItem[]>("/api/plants");
-  const histories = await getAllHistories(30);
-  const events: WateringLogEntry[] = [];
-  for (const plant of plants) {
-    for (const day of histories[plant.id]?.history ?? []) {
-      if (day.irrigated) {
-        events.push({ plant_id: plant.id, plant_name: plant.name, amount_liters: NaN, watered_at: day.date });
-      }
-    }
-  }
-  return events.sort((a, b) => (a.watered_at < b.watered_at ? 1 : -1)).slice(0, limit);
+  return liveFetch<WateringLogEntry[]>(`/api/watering-events?limit=${limit}`);
 }
 
 export { KANYAKUMARI, USE_MOCKS };

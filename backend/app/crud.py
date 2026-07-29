@@ -114,3 +114,14 @@ def get_history(db: Session, plant_id: int, days: int) -> list[models.MoistureHi
         .limit(days)
         .all()[::-1]
     )
+
+
+def get_recent_watering_events(db: Session, limit: int) -> list[tuple[models.WateringEvent, str]]:
+    rows = (
+        db.query(models.WateringEvent, models.Plant.name)
+        .join(models.Plant, models.WateringEvent.plant_id == models.Plant.id)
+        .order_by(models.WateringEvent.watered_at.desc())
+        .limit(limit)
+        .all()
+    )
+    return rows

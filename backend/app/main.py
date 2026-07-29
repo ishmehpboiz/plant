@@ -73,3 +73,17 @@ def get_plant_history(plant_id: int, days: int = 30, db: Session = Depends(get_d
         plant_id=plant_id,
         history=[schemas.HistoryPoint.model_validate(row) for row in rows],
     )
+
+
+@app.get("/api/watering-events", response_model=list[schemas.WateringEventOut])
+def list_watering_events(limit: int = 8, db: Session = Depends(get_db)):
+    rows = crud.get_recent_watering_events(db, limit)
+    return [
+        schemas.WateringEventOut(
+            plant_id=event.plant_id,
+            plant_name=plant_name,
+            amount_liters=event.amount_liters,
+            watered_at=event.watered_at,
+        )
+        for event, plant_name in rows
+    ]

@@ -75,11 +75,24 @@ export default function PlantDetailPage({ params }: PageProps) {
         ← All plants
       </Link>
 
+      <section className="hero-block hero-block--detail">
+        <h1>{plant.name}</h1>
+        <p>
+          Current simulated moisture, watering status, and 30-day trend for{" "}
+          <em>{plant.species}</em>.
+        </p>
+      </section>
+
       <div className="dashboard">
         <aside className="dash-aside">
           <div className="dash-meta">
-            <h1>{plant.name}</h1>
             <p className="species">{plant.species}</p>
+            <span
+              className={`status-badge status-badge--detail ${plant.needs_watering ? "needs" : "ok"}`}
+            >
+              <span className="dot" />
+              {plant.needs_watering ? "Needs water today" : "Healthy today"}
+            </span>
           </div>
 
           <MoistureIndicator

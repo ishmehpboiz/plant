@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces } from "next/font/google";
-import Link from "next/link";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -15,9 +14,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Plant — Smart Watering",
+  title: "Kanyakumari Garden — Smart Watering",
   description:
-    "Simulated irrigation for Kanyakumari garden plants, driven by local weather and FAO-56 crop coefficients.",
+    "2D garden map for simulated irrigation in Kanyakumari.",
 };
 
 export default function RootLayout({
@@ -27,20 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${fraunces.variable} ${dmSans.variable} h-full`}>
-      <body className="min-h-full antialiased">
-        <div className="shell">
-          <header className="site-header">
-            <Link href="/" className="brand">
-              <span>Kanyakumari · water balance</span>
-              Plant
-            </Link>
-            <Link href="/plants/new" className="nav-link">
-              Add plant
-            </Link>
-          </header>
-          {children}
-        </div>
-      </body>
+      <body className="min-h-full antialiased">{children}</body>
     </html>
   );
 }

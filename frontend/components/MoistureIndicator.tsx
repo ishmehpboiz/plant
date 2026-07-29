@@ -18,6 +18,8 @@ export function MoistureIndicator({
   const span = fieldCapacity - wiltingPoint || 1;
   const pct = Math.min(1, Math.max(0, (moisture - wiltingPoint) / span));
   const percentLabel = Math.round(moisture * 100);
+  const wiltPct = Math.round(wiltingPoint * 100);
+  const fieldPct = Math.round(fieldCapacity * 100);
 
   return (
     <div className="moisture">
@@ -29,9 +31,11 @@ export function MoistureIndicator({
       </div>
 
       <div className="moisture__gauge" aria-hidden>
-        <div className="moisture__track">
+        <div className="column-shell moisture__column">
+          <div className="tick" style={{ bottom: `${wiltPct}%` }} />
+          <div className="tick" style={{ bottom: `${fieldPct}%` }} />
           <motion.div
-            className="moisture__fill"
+            className="column-fill moisture__fill"
             initial={{ height: 0 }}
             animate={{ height: `${pct * 100}%` }}
             transition={{ type: "spring", stiffness: 80, damping: 18 }}
@@ -44,8 +48,8 @@ export function MoistureIndicator({
           />
         </div>
         <div className="moisture__scale">
-          <span>field {Math.round(fieldCapacity * 100)}%</span>
-          <span>wilt {Math.round(wiltingPoint * 100)}%</span>
+          <span>field {fieldPct}%</span>
+          <span>wilt {wiltPct}%</span>
         </div>
       </div>
 

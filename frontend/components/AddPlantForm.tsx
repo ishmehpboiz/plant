@@ -21,7 +21,11 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export function AddPlantForm() {
+type Props = {
+  onSuccess?: (plantId: number) => void;
+};
+
+export function AddPlantForm({ onSuccess }: Props) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
@@ -49,7 +53,11 @@ export function AddPlantForm() {
         location_lat: KANYAKUMARI.lat,
         location_lng: KANYAKUMARI.lng,
       });
-      router.push(`/plants/${plant.id}`);
+      if (onSuccess) {
+        onSuccess(plant.id);
+      } else {
+        router.push(`/plants/${plant.id}`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not create plant");
       setBusy(false);

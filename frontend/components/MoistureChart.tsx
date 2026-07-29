@@ -21,12 +21,25 @@ export function MoistureChart({ history }: Props) {
     moisturePct: Math.round(h.moisture * 1000) / 10,
     label: h.date.slice(5),
   }));
+  const latest = history[history.length - 1];
 
   return (
     <div className="chart">
       <div className="chart__head">
-        <h2>Moisture history</h2>
-        <p>Simulated water balance over the last {history.length} days</p>
+        <h2>30 day moisture</h2>
+        <span>
+          ET0 {latest?.et0.toFixed(1) ?? "0.0"}mm · rainfall {latest?.rainfall.toFixed(1) ?? "0.0"}mm
+        </span>
+      </div>
+      <div className="legend">
+        <span>
+          <i className="legend-line legend-line--teal" />
+          moisture fraction
+        </span>
+        <span>
+          <i className="legend-line legend-line--laterite" />
+          simulated trend
+        </span>
       </div>
       <div className="chart__body">
         <ResponsiveContainer width="100%" height={260}>

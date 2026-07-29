@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kanyakumari Garden — Watering Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EEF0E4;
+    --card: #FFFDF8;
+    --ink: #26241F;
+    --ink-soft: #59564B;
+    --palm: #2F4F3A;
+    --palm-soft: #E4EBE2;
+    --laterite: #9C4221;
+    --laterite-soft: #F3E1D6;
+    --teal: #1F6F72;
+    --teal-light: #BFE0DE;
+    --line: #DAD6C6;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    padding: 40px 24px 80px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; }
+
+  /* ---- Top bar ---- */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 32px;
+  }
+
+  .garden-name {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--palm);
+    font-weight: 500;
+  }
+
+  .weather-chip {
+    display: flex;
+    gap: 18px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .weather-chip span b { color: var(--ink); font-weight: 500; }
+
+  /* ---- Hero status ---- */
+  .hero {
+    margin-bottom: 40px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(32px, 5vw, 48px);
+    line-height: 1.08;
+    margin: 0 0 8px;
+  }
+  .hero h1 em {
+    font-style: normal;
+    color: var(--laterite);
+  }
+  .hero p {
+    margin: 0;
+    color: var(--ink-soft);
+    font-size: 15px;
+    max-width: 560px;
+  }
+
+  /* ---- Plant grid ---- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 18px;
+    margin-bottom: 48px;
+  }
+
+  .plant-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px 20px 18px;
+    display: flex;
+    gap: 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .plant-card:hover, .plant-card:focus-visible {
+    border-color: var(--palm);
+    transform: translateY(-2px);
+  }
+  .plant-card:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+  .plant-card.active { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal); }
+
+  /* soil column signature element */
+  .column-shell {
+    position: relative;
+    width: 34px;
+    height: 108px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #F1ECDD, #E7E0CC);
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .column-fill {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(180deg, var(--teal-light), var(--teal));
+    height: 0%;
+    transition: height 1.1s cubic-bezier(.22,.9,.3,1);
+    border-radius: 0 0 7px 7px;
+  }
+  .tick {
+    position: absolute;
+    left: 0; right: 0;
+    height: 1px;
+    background: rgba(38,36,31,0.35);
+  }
+  .tick-label {
+    position: absolute;
+    left: 38px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+    transform: translateY(-50%);
+  }
+
+  .plant-info { flex: 1; min-width: 0; }
+  .plant-name {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 500;
+    margin: 0 0 2px;
+  }
+  .plant-species {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-style: italic;
+    margin: 0 0 12px;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 4px 9px;
+    border-radius: 100px;
+    margin-bottom: 10px;
+  }
+  .status-badge.needs { background: var(--laterite-soft); color: var(--laterite); }
+  .status-badge.ok { background: var(--palm-soft); color: var(--palm); }
+  .status-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .status-badge.needs .dot { animation: pulse 1.6s ease-in-out infinite; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+
+  .metrics {
+    display: flex;
+    gap: 14px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .metrics b { color: var(--ink); font-weight: 500; }
+
+  /* ---- Trend panel ---- */
+  .trend-panel {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 28px 20px;
+  }
+  .trend-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .trend-header h2 {
+    font-family: 'Fraunces', serif;
+    font-size: 19px;
+    font-weight: 500;
+    margin: 0;
+  }
+  .trend-header span {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .legend {
+    display: flex;
+    gap: 18px;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend i { width: 10px; height: 2px; display: inline-block; }
+
+  svg { display: block; width: 100%; height: auto; }
+
+  footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 32px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .column-fill { transition: none; }
+    .status-badge.needs .dot { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="garden-name">Kanyakumari Garden</div>
+    <div class="weather-chip">
+      <span>ET0 today <b>6.14mm</b></span>
+      <span>Rainfall <b>3.0mm</b></span>
+      <span>Updated <b>6:00 AM</b></span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>2 of 6 plants <em>need water</em> today</h1>
+    <p>Soil moisture is simulated daily from real weather — no sensors, just evapotranspiration and rainfall doing the math.</p>
+  </div>
+
+  <div class="grid" id="plantGrid"></div>
+
+  <div class="trend-panel">
+    <div class="trend-header">
+      <h2 id="trendTitle">Coconut Palm — 30 day moisture</h2>
+      <span id="trendSub">wilting 0.15 · field capacity 0.62</span>
+    </div>
+    <div class="legend">
+      <span><i style="background: var(--teal)"></i> moisture fraction</span>
+      <span><i style="background: var(--laterite); opacity:.6"></i> wilting point</span>
+    </div>
+    <svg id="trendSvg" viewBox="0 0 720 200" preserveAspectRatio="none"></svg>
+  </div>
+
+  <footer>simulated moisture — physics-based, no hardware</footer>
+</div>
+
+<script>
+const plants = [
+  { name: "Coconut Palm", species: "Cocos nucifera", moisture: 0.72, wilt: 0.15, fc: 0.62, kc: 0.85, kcSource: "FAO-56", lastWatered: "3 days ago" },
+  { name: "Banana", species: "Musa spp.", moisture: 0.24, wilt: 0.18, fc: 0.58, kc: 0.90, kcSource: "FAO-56", lastWatered: "6 days ago" },
+  { name: "Mango Tree", species: "Mangifera indica", moisture: 0.58, wilt: 0.15, fc: 0.55, kc: 0.60, kcSource: "FAO-56", lastWatered: "2 days ago" },
+  { name: "Curry Leaf", species: "Murraya koenigii", moisture: 0.19, wilt: 0.16, fc: 0.50, kc: 0.50, kcSource: "estimate", lastWatered: "5 days ago" },
+  { name: "Jackfruit", species: "Artocarpus heterophyllus", moisture: 0.66, wilt: 0.15, fc: 0.60, kc: 0.65, kcSource: "FAO-56", lastWatered: "3 days ago" },
+  { name: "Jasmine", species: "Jasminum sambac", moisture: 0.44, wilt: 0.14, fc: 0.52, kc: 0.55, kcSource: "estimate", lastWatered: "4 days ago" },
+];
+
+const grid = document.getElementById('plantGrid');
+
+plants.forEach((p, i) => {
+  const needsWater = p.moisture <= p.wilt + 0.06;
+  const fillPct = Math.max(0, Math.min(100, p.moisture * 100));
+  const wiltPct = (p.wilt * 100).toFixed(0);
+  const fcPct = (p.fc * 100).toFixed(0);
+
+  const card = document.createElement('div');
+  card.className = 'plant-card';
+  card.tabIndex = 0;
+  card.dataset.index = i;
+  card.innerHTML = `
+    <div class="column-shell">
+      <div class="tick" style="bottom:${wiltPct}%"></div>
+      <div class="tick" style="bottom:${fcPct}%"></div>
+      <div class="column-fill" data-fill="${fillPct}"></div>
+    </div>
+    <div class="plant-info">
+      <p class="plant-name">${p.name}</p>
+      <p class="plant-species">${p.species}</p>
+      <div class="status-badge ${needsWater ? 'needs' : 'ok'}">
+        <span class="dot"></span>${needsWater ? 'Needs water' : 'Healthy'}
+      </div>
+      <div class="metrics">
+        <span>Kc <b>${p.kc}</b></span>
+        <span>Moisture <b>${(p.moisture*100).toFixed(0)}%</b></span>
+      </div>
+    </div>
+  `;
+  card.addEventListener('click', () => selectPlant(i));
+  card.addEventListener('keydown', (e) => { if (e.key === 'Enter') selectPlant(i); });
+  grid.appendChild(card);
+});
+
+// animate fills in on load
+requestAnimationFrame(() => {
+  document.querySelectorAll('.column-fill').forEach(el => {
+    const target = el.dataset.fill;
+    setTimeout(() => { el.style.height = target + '%'; }, 80);
+  });
+});
+
+function seededSeries(seed, wilt, fc, len=30) {
+  let v = (wilt + fc) / 2;
+  const out = [];
+  let s = seed;
+  for (let i = 0; i < len; i++) {
+    s = (s * 9301 + 49297) % 233280;
+    const rnd = (s / 233280) - 0.5;
+    v += rnd * 0.05 - 0.01;
+    v = Math.max(wilt - 0.05, Math.min(fc + 0.03, v));
+    out.push(v);
+  }
+  return out;
+}
+
+function drawTrend(p, idx) {
+  const svg = document.getElementById('trendSvg');
+  const W = 720, H = 200, pad = 8;
+  const series = seededSeries(idx * 17 + 3, p.wilt, p.fc);
+  const min = p.wilt - 0.08, max = p.fc + 0.08;
+  const x = i => pad + (i / (series.length - 1)) * (W - pad*2);
+  const y = v => H - pad - ((v - min) / (max - min)) * (H - pad*2);
+
+  const wiltY = y(p.wilt).toFixed(1);
+  const linePoints = series.map((v,i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const areaPoints = `${x(0).toFixed(1)},${H-pad} ${linePoints} ${x(series.length-1).toFixed(1)},${H-pad}`;
+
+  svg.innerHTML = `
+    <line x1="${pad}" y1="${wiltY}" x2="${W-pad}" y2="${wiltY}" stroke="#9C4221" stroke-opacity="0.5" stroke-width="1.5" stroke-dasharray="4 4" />
+    <polygon points="${areaPoints}" fill="#1F6F72" fill-opacity="0.12" />
+    <polyline points="${linePoints}" fill="none" stroke="#1F6F72" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+  `;
+
+  document.getElementById('trendTitle').textContent = `${p.name} — 30 day moisture`;
+  document.getElementById('trendSub').textContent = `wilting ${p.wilt.toFixed(2)} · field capacity ${p.fc.toFixed(2)}`;
+}
+
+function selectPlant(idx) {
+  document.querySelectorAll('.plant-card').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.plant-card[data-index="${idx}"]`).classList.add('active');
+  drawTrend(plants[idx], idx);
+}
+
+selectPlant(0);
+document.querySelector('.plant-card[data-index="0"]').classList.add('active');
+</script>
+</body>
+</html>

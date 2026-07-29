@@ -22,6 +22,8 @@ export function PlantList({ plants }: Props) {
     <ul className="plant-list">
       {plants.map((plant, i) => {
         const pct = Math.round(plant.current_moisture * 100);
+        const wiltPct = Math.round(plant.wilting_point * 100);
+        const fcPct = Math.round(plant.field_capacity * 100);
         return (
           <motion.li
             key={plant.id}
@@ -29,18 +31,37 @@ export function PlantList({ plants }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.4 }}
           >
-            <Link href={`/plants/${plant.id}`} className="plant-row">
-              <div className="plant-row__main">
-                <span className="plant-row__name">{plant.name}</span>
-                <span className="plant-row__species">{plant.species}</span>
+            <Link href={`/plants/${plant.id}`} className="plant-card">
+              <div className="column-shell" aria-hidden>
+                <div className="tick" style={{ bottom: `${wiltPct}%` }} />
+                <div className="tick" style={{ bottom: `${fcPct}%` }} />
+                <motion.div
+                  className="column-fill"
+                  initial={{ height: 0 }}
+                  animate={{ height: `${pct}%` }}
+                  transition={{ delay: i * 0.06, duration: 0.9, ease: "easeOut" }}
+                />
               </div>
-              <div className="plant-row__side">
+
+              <div className="plant-card__main">
+                <p className="plant-name">{plant.name}</p>
+                <p className="plant-species">{plant.species}</p>
+
                 <span
-                  className={`pill ${plant.needs_watering ? "pill--warn" : "pill--ok"}`}
+                  className={`status-badge ${plant.needs_watering ? "needs" : "ok"}`}
                 >
-                  {plant.needs_watering ? "Needs water" : "Ok"}
+                  <span className="dot" />
+                  {plant.needs_watering ? "Needs water" : "Healthy"}
                 </span>
-                <span className="plant-row__moisture">{pct}%</span>
+
+                <div className="metrics">
+                  <span>
+                    Kc <b>{plant.kc.toFixed(2)}</b>
+                  </span>
+                  <span>
+                    Moisture <b>{pct}%</b>
+                  </span>
+                </div>
               </div>
             </Link>
           </motion.li>

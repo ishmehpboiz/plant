@@ -6,6 +6,7 @@
   --ink: #26241f;
   --muted: #59564b;
   --leaf: #2f4f3a;
+  --leaf-deep: #1c3527;
   --leaf-soft: #e4ebe2;
   --laterite: #9c4221;
   --laterite-soft: #f3e1d6;
@@ -43,6 +44,29 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Consistent keyboard focus ring across every interactive element -- previously
+   only text inputs had one, everything else fell back to (or lost) the browser
+   default. */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--leaf) 55%, transparent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .shell {
@@ -558,6 +582,13 @@ a {
   font-size: 0.9rem;
 }
 
+/* Pull field-specific errors up against the field they belong to, instead of
+   the form's normal 1.25rem inter-field gap making them read as unrelated. */
+.form-error--field {
+  margin-top: -0.85rem;
+  font-size: 0.82rem;
+}
+
 .back-link {
   display: inline-block;
   margin-bottom: 1.25rem;
@@ -596,12 +627,58 @@ a {
   }
 }
 
+/* ---- Garden health gauge ---- */
+.health-gauge {
+  position: relative;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+}
+
+.health-gauge__svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 2px 6px rgba(38, 36, 31, 0.12));
+}
+
+.health-gauge__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.health-gauge__pct {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 560;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.health-gauge__status {
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 0.2rem;
+}
+
+.garden-page__title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 /* ---- 2D garden map ---- */
 .garden-page {
   min-height: 100vh;
   background: var(--bg);
-  padding: 1.5rem 1.25rem 2.5rem;
-  max-width: 1200px;
+  padding: 1.5rem 1.5rem 3rem;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -614,22 +691,189 @@ a {
   margin-bottom: 0.5rem;
 }
 
-.garden-page__body {
+.garden-page__layout {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
   margin-top: 1rem;
 }
 
-@media (min-width: 900px) {
-  .garden-page__body {
-    grid-template-columns: 1fr min(340px, 36%);
+@media (min-width: 760px) {
+  .garden-page__layout {
+    grid-template-columns: min(220px, 22%) 1fr;
     align-items: start;
   }
+}
 
+.garden-page__body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+@media (min-width: 1080px) {
   .garden-page__body:has(.garden-panel--inline) {
-    grid-template-columns: 1fr min(360px, 38%);
+    grid-template-columns: 1fr min(360px, 34%);
+    align-items: start;
   }
+}
+
+/* ---- Plant rail ---- */
+.plant-rail {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem 0.75rem;
+}
+
+.plant-rail__heading {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  padding: 0 0.5rem;
+}
+
+.plant-rail ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.plant-rail__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s ease;
+}
+
+.plant-rail__item:hover {
+  background: var(--leaf-soft);
+  box-shadow: 0 6px 14px rgba(38, 36, 31, 0.1);
+}
+
+.plant-rail__item.is-selected {
+  background: var(--leaf-soft);
+  box-shadow: inset 0 0 0 1px var(--leaf);
+}
+
+.plant-rail__item .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.plant-rail__item .dot.needs {
+  background: var(--laterite);
+}
+
+.plant-rail__item .dot.ok {
+  background: var(--leaf);
+}
+
+.plant-rail__name {
+  flex: 1;
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.plant-rail__pct {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.trend-arrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.trend-arrow--up {
+  color: var(--teal);
+}
+
+.trend-arrow--down {
+  color: var(--laterite);
+}
+
+.trend-arrow--flat {
+  color: var(--line);
+}
+
+/* ---- Actions summary ---- */
+.actions-summary {
+  background: var(--laterite-soft);
+  border: 1px solid rgba(156, 66, 33, 0.18);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.actions-summary__heading {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--laterite);
+  margin: 0 0 0.5rem;
+}
+
+.actions-summary ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.actions-summary__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.actions-summary__name {
+  flex: 1;
+  font-size: 0.88rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.actions-summary__pct {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.btn--compact {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.78rem;
+}
+
+.water-action--compact {
+  display: flex;
 }
 
 .garden-map {
@@ -670,15 +914,74 @@ a {
   z-index: 3;
 }
 
+.garden-pin__stack {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: bottom center;
+}
+
+.garden-pin__plant {
+  display: block;
+  margin-bottom: -6px;
+  filter: drop-shadow(0 1px 1px rgba(38, 36, 31, 0.18));
+}
+
 .garden-pin__column {
   position: relative;
-  width: 22px;
-  height: 52px;
-  border-radius: 6px;
+  width: 16px;
+  height: 34px;
+  border-radius: 5px;
   background: linear-gradient(180deg, #f1ecdd, #e7e0cc);
   border: 1px solid var(--line);
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(38, 36, 31, 0.15);
+  z-index: 1;
+}
+
+.garden-pin__shadow {
+  width: 46px;
+  height: 12px;
+  margin-top: 2px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(38, 36, 31, 0.28) 0%, rgba(38, 36, 31, 0) 72%);
+}
+
+.garden-pin__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 70px;
+  height: 70px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--laterite) 45%, transparent) 0%, transparent 70%);
+  pointer-events: none;
+  animation: pinGlowPulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pinGlowPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15);
+  }
+}
+
+.garden-map__flow-path {
+  stroke-dasharray: 2 14;
+  animation: flowDash 1.6s linear infinite;
+}
+
+@keyframes flowDash {
+  to {
+    stroke-dashoffset: -32;
+  }
 }
 
 .garden-pin__fill {
@@ -822,4 +1125,210 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ---- Below-map insights ---- */
+.garden-insights {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .garden-insights {
+    grid-template-columns: 1.4fr 1fr 1fr;
+    align-items: start;
+  }
+}
+
+.insight-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1.1rem 1.15rem;
+}
+
+.insight-card__heading {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+}
+
+.insight-card__empty {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+  /* Roughly matches the loaded content's height so swapping in real data
+     doesn't visibly jolt the page (CLS). */
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+}
+
+.trend-strip__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.9rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.trend-strip__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.trend-strip__legend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.trend-strip__tooltip {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem;
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  box-shadow: 0 4px 16px rgba(38, 36, 31, 0.12);
+}
+
+.trend-strip__tooltip-date {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin: 0 0 0.35rem;
+}
+
+.trend-strip__tooltip p {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.15rem 0;
+  white-space: nowrap;
+}
+
+.trend-strip__tooltip p i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.trend-strip__tooltip b {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.watering-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.watering-log li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.watering-log--timeline {
+  position: relative;
+  padding-left: 1.1rem;
+  gap: 0.85rem;
+}
+
+.watering-log--timeline::before {
+  content: "";
+  position: absolute;
+  left: 0.2rem;
+  top: 0.4rem;
+  bottom: 0.4rem;
+  width: 1px;
+  background: var(--line);
+}
+
+.watering-log--timeline li {
+  position: relative;
+}
+
+.watering-log__node {
+  position: absolute;
+  left: -0.9rem;
+  top: 0.3rem;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow: 0 0 0 3px var(--surface);
+}
+
+.watering-log__plant {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.watering-log__amount {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--teal);
+}
+
+.watering-log__when {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  width: 3.6rem;
+  text-align: right;
+}
+
+.weather-outlook {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.weather-outlook__day {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.3rem;
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.weather-outlook__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.weather-outlook__temp {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+}
+
+.weather-outlook__stat {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--muted);
 }

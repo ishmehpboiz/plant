@@ -5,7 +5,7 @@
  * Species / Kc values mirror backend/app/kc_table.py (Kanyakumari set).
  */
 
-import type { PlantHistory, PlantListItem } from "./types";
+import type { PlantHistory, PlantListItem, WateringLogEntry } from "./types";
 
 /** Approx. Kanyakumari, Tamil Nadu */
 export const KANYAKUMARI = { lat: 8.0883, lng: 77.5385 };
@@ -205,3 +205,15 @@ export const MOCK_HISTORY: Record<number, PlantHistory> = Object.fromEntries(
     buildHistory(p.id, p.current_moisture, p.wilting_point, p.field_capacity),
   ]),
 );
+
+/** Seed the watering log from the `irrigated` days already baked into MOCK_HISTORY. */
+export const MOCK_WATERING_LOG: WateringLogEntry[] = MOCK_PLANTS.flatMap((plant) =>
+  MOCK_HISTORY[plant.id].history
+    .filter((day) => day.irrigated)
+    .map((day) => ({
+      plant_id: plant.id,
+      plant_name: plant.name,
+      amount_liters: 3 + ((plant.id * 7) % 6), // plausible per-plant variety, not a real reading
+      watered_at: day.date,
+    })),
+).sort((a, b) => (a.watered_at < b.watered_at ? 1 : -1));

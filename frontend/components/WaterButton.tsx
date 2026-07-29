@@ -8,9 +8,10 @@ import type { Plant } from "@/lib/types";
 type Props = {
   plantId: number;
   onWatered: (plant: Plant) => void;
+  compact?: boolean;
 };
 
-export function WaterButton({ plantId, onWatered }: Props) {
+export function WaterButton({ plantId, onWatered, compact }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,15 +29,15 @@ export function WaterButton({ plantId, onWatered }: Props) {
   }
 
   return (
-    <div className="water-action">
+    <div className={compact ? "water-action water-action--compact" : "water-action"}>
       <motion.button
         type="button"
-        className="btn btn--primary"
+        className={`btn btn--primary ${compact ? "btn--compact" : ""}`}
         onClick={handleWater}
         disabled={busy}
         whileTap={{ scale: 0.98 }}
       >
-        {busy ? "Logging…" : "I watered it"}
+        {busy ? "…" : compact ? "Mark as watered" : "I watered it"}
       </motion.button>
       {error && <p className="form-error">{error}</p>}
     </div>

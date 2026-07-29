@@ -1,5 +1,6 @@
 "use client";
 
+import { useReducedMotion } from "motion/react";
 import {
   Area,
   AreaChart,
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export function MoistureChart({ history }: Props) {
+  const reduceMotion = useReducedMotion();
   const data = history.map((h) => ({
     ...h,
     moisturePct: Math.round(h.moisture * 1000) / 10,
@@ -28,7 +30,7 @@ export function MoistureChart({ history }: Props) {
       <div className="chart__head">
         <h2>30 day moisture</h2>
         <span>
-          ET0 {latest?.et0.toFixed(1) ?? "0.0"}mm · rainfall {latest?.rainfall.toFixed(1) ?? "0.0"}mm
+          Water loss {latest?.et0.toFixed(1) ?? "0.0"}mm · rainfall {latest?.rainfall.toFixed(1) ?? "0.0"}mm
         </span>
       </div>
       <div className="legend">
@@ -78,12 +80,19 @@ export function MoistureChart({ history }: Props) {
               labelFormatter={(label) => `Date · ${label}`}
             />
             <Area
-              type="monotone"
+              type="natural"
               dataKey="moisturePct"
               stroke="var(--leaf-deep)"
               strokeWidth={2}
               fill="url(#moistureFill)"
-              isAnimationActive
+              style={{ filter: "drop-shadow(0 0 4px color-mix(in srgb, var(--leaf-deep) 55%, transparent))" }}
+              activeDot={{
+                r: 5.5,
+                strokeWidth: 2,
+                stroke: "var(--surface)",
+                style: { filter: "drop-shadow(0 0 6px var(--leaf-deep))" },
+              }}
+              isAnimationActive={!reduceMotion}
               animationDuration={900}
             />
           </AreaChart>

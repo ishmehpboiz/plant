@@ -1,10 +1,13 @@
 /** 2D map positions (% of garden-map container). */
 
+import type { PlantListItem } from "@/lib/types";
+
 export type PlantKind = "palm" | "banana" | "tree" | "shrub" | "flowering";
 
 export type MapSlot = {
   x: number;
   y: number;
+  /** Fallback only, for species this table doesn't recognize. */
   kind: PlantKind;
 };
 
@@ -21,4 +24,27 @@ export const MAP_SLOTS: MapSlot[] = [
 
 export function mapSlotForPlant(id: number): MapSlot {
   return MAP_SLOTS[(id - 1) % MAP_SLOTS.length];
+}
+
+/** Growth-form bucket per species (mirrors backend/app/kc_table.py's 15 species). */
+const KIND_BY_SPECIES: Record<string, PlantKind> = {
+  "Cocos nucifera": "palm",
+  "Areca catechu": "palm",
+  "Musa spp.": "banana",
+  "Mangifera indica": "tree",
+  "Artocarpus heterophyllus": "tree",
+  "Hevea brasiliensis": "tree",
+  "Carica papaya": "tree",
+  "Camellia sinensis": "shrub",
+  "Coffea spp.": "shrub",
+  "Manihot esculenta": "shrub",
+  "Murraya koenigii": "shrub",
+  "Moringa oleifera": "shrub",
+  "Hibiscus rosa-sinensis": "flowering",
+  "Jasminum sambac": "flowering",
+  "Piper nigrum": "flowering",
+};
+
+export function kindForPlant(plant: PlantListItem): PlantKind {
+  return KIND_BY_SPECIES[plant.species] ?? mapSlotForPlant(plant.id).kind;
 }

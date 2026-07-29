@@ -30,21 +30,21 @@ export function AddPlantForm({ onSuccess }: Props) {
   const [name, setName] = useState("");
   const [photo, setPhoto] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!name.trim()) {
-      setError("Give the plant a name.");
-      return;
-    }
-    if (!photo) {
-      setError("Add a photo so species can be identified.");
-      return;
-    }
+    setSubmitError(null);
+
+    const missingName = !name.trim();
+    const missingPhoto = !photo;
+    setNameError(missingName ? "Give the plant a name." : null);
+    setPhotoError(missingPhoto ? "Add a photo so species can be identified." : null);
+    if (missingName || missingPhoto) return;
 
     setBusy(true);
-    setError(null);
     try {
       const photo_base64 = await fileToBase64(photo);
       const plant = await createPlant({
@@ -59,7 +59,7 @@ export function AddPlantForm({ onSuccess }: Props) {
         router.push(`/plants/${plant.id}`);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create plant");
+      setSubmitError(err instanceof Error ? err.message : "Could not create plant");
       setBusy(false);
     }
   }
@@ -71,26 +71,36 @@ export function AddPlantForm({ onSuccess }: Props) {
         <input
           type="text"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (nameError) setNameError(null);
+          }}
           placeholder="e.g. Backyard papaya"
           autoComplete="off"
+          aria-invalid={!!nameError}
         />
       </label>
+      {nameError && <p className="form-error form-error--field">{nameError}</p>}
 
       <label className="field">
         <span>Photo</span>
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => setPhoto(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            setPhoto(e.target.files?.[0] ?? null);
+            if (photoError) setPhotoError(null);
+          }}
+          aria-invalid={!!photoError}
         />
         <em className="field-hint">
           Mock mode guesses species from the name (try “mango”, “coconut”, “hibiscus”).
           Location defaults to Kanyakumari.
         </em>
       </label>
+      {photoError && <p className="form-error form-error--field">{photoError}</p>}
 
-      {error && <p className="form-error">{error}</p>}
+      {submitError && <p className="form-error">{submitError}</p>}
 
       <button type="submit" className="btn btn--primary" disabled={busy}>
         {busy ? "Identifying…" : "Add plant"}

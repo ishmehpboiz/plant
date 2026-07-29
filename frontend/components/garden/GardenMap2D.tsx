@@ -2,7 +2,8 @@
 
 import type { PlantListItem } from "@/lib/types";
 import { plantMapLabel } from "./plantMapLabel";
-import { mapSlotForPlant } from "./plantPositions";
+import { kindForPlant, mapSlotForPlant } from "./plantPositions";
+import { KIND_SCALE, PlantSilhouette } from "./plantSilhouettes";
 
 type Props = {
   plants: PlantListItem[];
@@ -49,6 +50,23 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
           <filter id="shrubFront" x="-30%" y="-30%" width="160%" height="160%">
             <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#26241f" floodOpacity="0.22" />
           </filter>
+
+          {/* Subtle grain so the lawn isn't one flat fill */}
+          <filter id="grassGrain" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="noise" />
+            <feColorMatrix
+              in="noise"
+              type="matrix"
+              values="0 0 0 0 0.1
+                      0 0 0 0 0.2
+                      0 0 0 0 0.08
+                      0 0 0 0.05 0"
+            />
+          </filter>
+
+          <clipPath id="lawnClip">
+            <path d="M 90 120 Q 400 90 710 130 L 700 480 Q 400 510 100 460 Z" />
+          </clipPath>
         </defs>
 
         {/* Outer ground */}
@@ -88,6 +106,25 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
         <path
           d="M 90 120 Q 400 90 710 130 L 700 480 Q 400 510 100 460 Z"
           fill="url(#lawnGrad)"
+        />
+        <rect x="90" y="90" width="620" height="420" filter="url(#grassGrain)" clipPath="url(#lawnClip)" opacity="0.5" />
+
+        {/* Garden-bed / mulch zone — a second distinguishable ground material
+            under the planted cluster, so the lawn isn't one uniform color */}
+        <path
+          d="M 165 200 Q 320 175 470 215 Q 520 260 470 340 Q 340 400 210 375 Q 150 300 165 200 Z"
+          fill="#a67b4f"
+          opacity="0.35"
+          clipPath="url(#lawnClip)"
+        />
+        <path
+          d="M 165 200 Q 320 175 470 215 Q 520 260 470 340 Q 340 400 210 375 Q 150 300 165 200 Z"
+          fill="none"
+          stroke="#8a6238"
+          strokeWidth="1.5"
+          strokeDasharray="3 5"
+          opacity="0.4"
+          clipPath="url(#lawnClip)"
         />
 
         {/* Curved flower border — left (back + front with depth) */}
@@ -130,6 +167,17 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
           filter="url(#shrubFront)"
           stroke="#6b5088"
           strokeWidth="1.5"
+        />
+
+        {/* Soft animated flow along the path, suggesting water reaching the plants */}
+        <path
+          className="garden-map__flow-path"
+          d={`M ${PATH_STONES.map(([x, y]) => `${x + 14},${y + 10}`).join(" L ")}`}
+          fill="none"
+          stroke="var(--teal)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.45"
         />
 
         {/* Stepping stone path — ends at bottom gate */}
@@ -182,6 +230,7 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
 
       {plants.map((plant) => {
         const slot = mapSlotForPlant(plant.id);
+        const kind = kindForPlant(plant);
         const pct = moisturePct(plant.current_moisture);
         const selected = selectedId === plant.id;
         const label = plantMapLabel(plant);
@@ -195,8 +244,16 @@ export function GardenMap2D({ plants, selectedId, onSelectPlant }: Props) {
             onClick={() => onSelectPlant(plant.id)}
             aria-label={`${plant.name}, ${pct}% moisture`}
           >
-            <div className="garden-pin__column" aria-hidden>
-              <div className="garden-pin__fill" style={{ height: `${pct}%` }} />
+            <div
+              className="garden-pin__stack"
+              style={{ transform: `scale(${KIND_SCALE[kind]})` }}
+            >
+              {plant.needs_watering && <div className="garden-pin__glow" aria-hidden />}
+              <PlantSilhouette kind={kind} className="garden-pin__plant" />
+              <div className="garden-pin__column" aria-hidden>
+                <div className="garden-pin__fill" style={{ height: `${pct}%` }} />
+              </div>
+              <div className="garden-pin__shadow" aria-hidden />
             </div>
             <span className="garden-pin__label">{label}</span>
           </button>

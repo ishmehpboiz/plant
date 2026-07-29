@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getPlantHistory, USE_MOCKS } from "@/lib/api";
+import { getAllHistories, getPlantHistory } from "@/lib/api";
 import { MoistureChart } from "@/components/MoistureChart";
 import { MoistureIndicator } from "@/components/MoistureIndicator";
 import { WaterButton } from "@/components/WaterButton";
 import { AddPlantForm } from "@/components/AddPlantForm";
 import { GardenMap2D } from "./GardenMap2D";
+import { PlantRail } from "./PlantRail";
+import { ActionsSummary } from "./ActionsSummary";
+import { GardenHealthGauge } from "./GardenHealthGauge";
+import { TrendStrip } from "./TrendStrip";
+import { WateringLog } from "./WateringLog";
+import { WeatherOutlook } from "./WeatherOutlook";
 import type { Plant, PlantHistory, PlantListItem } from "@/lib/types";
 
 type Props = {
@@ -19,13 +25,27 @@ export function GardenExperience({ plants, onPlantsChange }: Props) {
   const [history, setHistory] = useState<PlantHistory | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [plantState, setPlantState] = useState<PlantListItem[]>(plants);
+  const [allHistories, setAllHistories] = useState<Record<number, PlantHistory>>({});
+  const [insightsVersion, setInsightsVersion] = useState(0);
 
   useEffect(() => {
     setPlantState(plants);
   }, [plants]);
 
+  useEffect(() => {
+    getAllHistories(30).then(setAllHistories).catch(() => setAllHistories({}));
+  }, [insightsVersion, plants]);
+
   const selected = plantState.find((p) => p.id === selectedId) ?? null;
   const needsWaterCount = plantState.filter((p) => p.needs_watering).length;
+
+  const trends: Record<number, "up" | "down" | "flat"> = {};
+  for (const plant of plantState) {
+    const hist = allHistories[plant.id]?.history ?? [];
+    if (hist.length < 2) continue;
+    const delta = hist[hist.length - 1].moisture - hist[hist.length - 2].moisture;
+    trends[plant.id] = Math.abs(delta) < 0.005 ? "flat" : delta > 0 ? "up" : "down";
+  }
 
   useEffect(() => {
     if (!selectedId) {
@@ -48,21 +68,25 @@ export function GardenExperience({ plants, onPlantsChange }: Props) {
     );
     onPlantsChange();
     if (selectedId) getPlantHistory(selectedId, 30).then(setHistory).catch(() => {});
+    setInsightsVersion((v) => v + 1);
   }
 
   return (
     <div className="garden-page">
       <header className="garden-page__header">
-        <div>
-          <p className="garden-overlay__label">Kanyakumari Garden</p>
-          <h1 className="garden-overlay__title">
-            {needsWaterCount} of {plantState.length} plants{" "}
-            <em>need water</em> today
-          </h1>
+        <div className="garden-page__title-row">
+          <GardenHealthGauge plants={plantState} />
+          <div>
+            <p className="garden-overlay__label">Kanyakumari Garden</p>
+            <h1 className="garden-overlay__title">
+              {needsWaterCount} of {plantState.length} plants{" "}
+              <em>need water</em> today
+            </h1>
+          </div>
         </div>
         <div className="garden-overlay__actions">
           <div className="weather-chip weather-chip--overlay">
-            <span>ET0 <b>6.14mm</b></span>
+            <span>Water loss <b>6.14mm</b></span>
             <span>Rain <b>3.0mm</b></span>
             <span>6:00 AM</span>
           </div>
@@ -80,9 +104,21 @@ export function GardenExperience({ plants, onPlantsChange }: Props) {
       </header>
 
       <p className="garden-hint">Tap a plant on the map to inspect moisture</p>
-      {USE_MOCKS && <span className="mock-banner">Mock API · contract shapes</span>}
 
-      <div className="garden-page__body">
+      <ActionsSummary plants={plantState} onWatered={onWatered} />
+
+      <div className="garden-page__layout">
+        <PlantRail
+          plants={plantState}
+          selectedId={selectedId}
+          trends={trends}
+          onSelectPlant={(id) => {
+            setSelectedId(id);
+            setShowAdd(false);
+          }}
+        />
+
+        <div className="garden-page__body">
         <GardenMap2D
           plants={plantState}
           selectedId={selectedId}
@@ -151,6 +187,13 @@ export function GardenExperience({ plants, onPlantsChange }: Props) {
             />
           </aside>
         )}
+        </div>
+      </div>
+
+      <div className="garden-insights">
+        <TrendStrip plants={plantState} histories={allHistories} />
+        <WateringLog refreshKey={insightsVersion} />
+        <WeatherOutlook />
       </div>
     </div>
   );

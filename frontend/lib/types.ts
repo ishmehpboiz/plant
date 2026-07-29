@@ -37,3 +37,10 @@ export type CreatePlantRequest = {
 export type WaterRequest = {
   amount_liters?: number;
 };
+
+export type WateringLogEntry = {
+  plant_id: number;
+  plant_name: string;
+  amount_liters: number;
+  watered_at: string; // ISO date or datetime
+};

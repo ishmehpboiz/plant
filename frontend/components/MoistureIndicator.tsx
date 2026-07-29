@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 type Props = {
   moisture: number;
@@ -20,6 +20,7 @@ export function MoistureIndicator({
   const percentLabel = Math.round(moisture * 100);
   const wiltPct = Math.round(wiltingPoint * 100);
   const fieldPct = Math.round(fieldCapacity * 100);
+  const reduceMotion = useReducedMotion();
 
   return (
     <div className="moisture">
@@ -36,16 +37,18 @@ export function MoistureIndicator({
           <div className="tick" style={{ bottom: `${fieldPct}%` }} />
           <motion.div
             className="column-fill moisture__fill"
-            initial={{ height: 0 }}
+            initial={reduceMotion ? false : { height: 0 }}
             animate={{ height: `${pct * 100}%` }}
-            transition={{ type: "spring", stiffness: 80, damping: 18 }}
+            transition={reduceMotion ? { duration: 0 } : { type: "spring", stiffness: 80, damping: 18 }}
           />
-          <motion.div
-            className="moisture__ripple"
-            animate={{ opacity: [0.15, 0.35, 0.15], scale: [1, 1.04, 1] }}
-            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
-            style={{ bottom: `${pct * 100}%` }}
-          />
+          {!reduceMotion && (
+            <motion.div
+              className="moisture__ripple"
+              animate={{ opacity: [0.15, 0.35, 0.15], scale: [1, 1.04, 1] }}
+              transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+              style={{ bottom: `${pct * 100}%` }}
+            />
+          )}
         </div>
         <div className="moisture__scale">
           <span>field {fieldPct}%</span>

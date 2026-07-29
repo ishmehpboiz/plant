@@ -1,4 +1,6 @@
-from fastapi import Depends, FastAPI, HTTPException
+import os
+
+from fastapi import Depends, FastAPI, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -27,8 +29,19 @@ def list_plants(db: Session = Depends(get_db)):
     ]
 
 
-@app.post("/api/daily-update")
-def daily_update(db: Session = Depends(get_db)):
+def _verify_cron_request(authorization: str | None) -> None:
+    """Vercel Cron calls with `Authorization: Bearer $CRON_SECRET` when that
+    env var is set on the project -- reject anything else so this endpoint
+    (which mutates every plant's moisture) isn't publicly triggerable.
+    Unenforced when CRON_SECRET isn't set, so local dev needs no setup."""
+    secret = os.environ.get("CRON_SECRET")
+    if secret and authorization != f"Bearer {secret}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+@app.api_route("/api/daily-update", methods=["GET", "POST"])
+def daily_update(db: Session = Depends(get_db), authorization: str | None = Header(default=None)):
+    _verify_cron_request(authorization)
     return crud.run_daily_update(db)
 
 

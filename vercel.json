@@ -1,0 +1,12 @@
+{
+  "builds": [
+    { "src": "frontend/package.json", "use": "@vercel/next" },
+    { "src": "backend/index.py", "use": "@vercel/python" }
+  ],
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/backend/index.py" }
+  ],
+  "crons": [
+    { "path": "/api/daily-update", "schedule": "0 0 * * *" }
+  ]
+}
